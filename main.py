@@ -1,7 +1,18 @@
 from re import search, IGNORECASE, sub
 from pathlib import Path
+from typing import List
 
 from argostranslate.translate import Language, package, get_installed_languages
+
+
+def log(original_func):
+    def inner(*args, **kwargs):
+        print('Translating .txt files in the current directory from Slovak to English language. Please wait ...')
+        processed_files = original_func(*args, **kwargs)
+        print(f'All done. {len(processed_files)} files were translated!')
+        return original_func
+
+    return inner
 
 
 def find_language(input_code: str, language_list: list[Language]) -> Language:
@@ -16,7 +27,8 @@ def write_data_to_file(input_file_path: str, input_data: str):
         output_file.write(input_data)
 
 
-def translate_files(from_code: str, to_code: str):
+@log
+def translate_files(from_code: str, to_code: str) -> List[str]:
     # Download and install Argos Translate package
     package.update_package_index()
     available_packages = package.get_available_packages()
@@ -40,7 +52,8 @@ def translate_files(from_code: str, to_code: str):
 
     p = Path('.')
 
-    text_files = [x.name for x in p.iterdir() if x.is_file() and search(r'\.txt$', x.name, IGNORECASE)]
+    text_files = [x.name for x in p.iterdir()
+                  if x.is_file() and search(r'\.txt$', x.name, IGNORECASE) and x.name != 'requirements.txt']
 
     for file_path in text_files:
         with open(file_path, 'r', encoding='utf-8') as input_file:
@@ -48,8 +61,7 @@ def translate_files(from_code: str, to_code: str):
             file_name = sub(r'\.txt$', '', file_path)
             write_data_to_file(f'{file_name}_translation_result.txt', translated_text)
 
-    print(f'All done. {len(text_files)} files were translated!')
+    return text_files
 
 
-print('Translating .txt files in the current directory from Slovak to English language. Please wait ...')
 translate_files('sk', 'en')
