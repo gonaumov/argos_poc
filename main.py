@@ -53,7 +53,8 @@ def translate_files(from_code: str, to_code: str) -> List[str]:
     p = Path('.')
 
     text_files = [x.name for x in p.iterdir()
-                  if x.is_file() and search(r'\.txt$', x.name, IGNORECASE) and x.name != 'requirements.txt']
+                  if x.is_file() and search(r'\.txt$', x.name, IGNORECASE)
+                  and x.name != 'requirements.txt' and not x.name.endswith('result.txt')]
 
     for file_path in text_files:
         with open(file_path, 'r', encoding='utf-8') as input_file:
